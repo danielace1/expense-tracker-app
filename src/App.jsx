@@ -32,7 +32,7 @@ const App = () => {
           {/* form */}
           {dialogbox && (
             <form
-              className={`absolute max-w-[360px] w-full bg-zinc-700 rounded-lg shadow-md px-4 py-6 space-y-6`}
+              className={`absolute max-w-[360px] w-full bg-zinc-700 rounded-lg shadow-md px-4 py-6 space-y-6 animate-fade`}
             >
               <h1 className="text-white font-semibold text-xl">Add Expense</h1>
               <FormInput name="name" label="Name" />
