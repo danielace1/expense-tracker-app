@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const FormInput = ({ name, label, type = "text" }) => {
+const FormInput = ({ name, label, type = "text", register, error }) => {
   return (
     <div className="relative z-0">
       <input
@@ -9,6 +9,7 @@ const FormInput = ({ name, label, type = "text" }) => {
         id={name}
         className="block pb-1 pt-2.5 px-0 w-full bg-transparent border-0 border-b-2 border-gray-400 appearance-none text-white dark:border-gray-800 dark:focus:border-cyan-500 focus:outline-none focus:ring-0 focus:border-cyan-600 peer"
         placeholder=" "
+        {...register}
       />
       <label
         htmlFor={name}
@@ -16,6 +17,11 @@ const FormInput = ({ name, label, type = "text" }) => {
       >
         {label}
       </label>
+      {error && (
+        <span className="text-red-500 dark:text-red-400 text-xs">
+          {error.message}
+        </span>
+      )}
     </div>
   );
 };
@@ -24,6 +30,8 @@ FormInput.propTypes = {
   name: PropTypes.string.isRequired,
   type: PropTypes.string,
   label: PropTypes.string.isRequired,
+  register: PropTypes.object,
+  error: PropTypes.object,
 };
 
 export default FormInput;
