@@ -15,6 +15,7 @@ const TheNavbar = () => {
           </h1>
         </Link>
       </div>
+
       <div>
         <button
           title="Delete All Expenses"
