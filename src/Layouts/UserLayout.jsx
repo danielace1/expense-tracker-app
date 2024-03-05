@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import { ref, onValue, push } from "firebase/database";
+import { database } from "../firebase";
 
 import TheNavbar from "../components/TheNavbar";
 import FormInput from "../components/form/FormInput";
@@ -11,13 +11,13 @@ import TextArea from "../components/form/TextArea";
 import { useForm } from "react-hook-form";
 import ExpenseCard from "../components/ExpenseCard";
 
-const COLLECTION_NAME = "users";
+const COLLECTION_NAME = "people/";
 
 const Schema = z.object({
   name: z
     .string()
     .min(3, { message: "Name must be at least 3 characters" })
-    .max(15, { message: "Name must be at most 30 characters" }),
+    .max(30, { message: "Name must be at most 30 characters" }),
   desc: z
     .string()
     .min(10, { message: "Description must be at least 10 characters" })
@@ -30,6 +30,7 @@ const Schema = z.object({
 const UserLayout = () => {
   const [dialogbox, setdialogBox] = useState(false);
   const [expenseCard, setexpenseCard] = useState([]);
+  const [total, settotal] = useState("0");
 
   const {
     register,
@@ -43,12 +44,15 @@ const UserLayout = () => {
     reset();
   };
 
-  const sendInfoToFirebase = async (data) => {
+  const sendInfoToFirebase = (data) => {
     setdialogBox(false);
 
     try {
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), data);
-      console.log("Document written with ID: ", docRef.id);
+      push(ref(database, COLLECTION_NAME), {
+        name: data.name,
+        desc: data.desc,
+        amount: data.amount,
+      });
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -58,16 +62,25 @@ const UserLayout = () => {
 
   // fetching data from Firebase
   useEffect(() => {
-    async function getDataFromFirebase() {
-      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const starCountRef = ref(database, COLLECTION_NAME);
+    onValue(starCountRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Extract keys from the snapshot
+        const keys = Object.keys(data);
+        const newData = keys.map((key) => ({ id: key, ...data[key] }));
 
-      if (querySnapshot.docs.length === 0) {
-        console.log("No record exist!");
+        const totalAmount = newData.reduce(
+          (total, expense) => total + parseFloat(expense.amount),
+          0
+        );
+        settotal(totalAmount);
+
+        setexpenseCard([...newData]);
+      } else {
+        console.log("No records found!");
       }
-      setexpenseCard(querySnapshot.docs.map((doc) => doc.data()));
-    }
-
-    getDataFromFirebase();
+    });
   }, []);
 
   return (
@@ -85,8 +98,9 @@ const UserLayout = () => {
 
           <div className="bg-zinc-600 text-center py-3 text-white font-semibold">
             <p>
-              There are <span className="text-green-400 text-lg"> ₹ 1000</span>{" "}
-              total expenses
+              There are{" "}
+              <span className="text-green-400 text-lg"> ₹ {total}</span> total
+              expenses
             </p>
           </div>
 
