@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 import TheNavbar from "../components/TheNavbar";
 import FormInput from "../components/form/FormInput";
 import TextArea from "../components/form/TextArea";
 import { useForm } from "react-hook-form";
 import ExpenseCard from "../components/ExpenseCard";
+
+const COLLECTION_NAME = "users";
 
 const Schema = z.object({
   name: z
@@ -24,6 +29,7 @@ const Schema = z.object({
 
 const UserLayout = () => {
   const [dialogbox, setdialogBox] = useState(false);
+  const [expenseCard, setexpenseCard] = useState([]);
 
   const {
     register,
@@ -34,13 +40,35 @@ const UserLayout = () => {
 
   const handleDialogBox = () => {
     setdialogBox(!dialogbox);
-  };
-
-  const sendInfoToFirebase = (e) => {
-    console.log(e);
-    setdialogBox(false);
     reset();
   };
+
+  const sendInfoToFirebase = async (data) => {
+    setdialogBox(false);
+
+    try {
+      const docRef = await addDoc(collection(db, COLLECTION_NAME), data);
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+
+    reset();
+  };
+
+  // fetching data from Firebase
+  useEffect(() => {
+    async function getDataFromFirebase() {
+      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+
+      if (querySnapshot.docs.length === 0) {
+        console.log("No record exist!");
+      }
+      setexpenseCard(querySnapshot.docs.map((doc) => doc.data()));
+    }
+
+    getDataFromFirebase();
+  }, []);
 
   return (
     <>
@@ -126,8 +154,15 @@ const UserLayout = () => {
 
           {/* Expense Cards */}
           <div className="m-3 divide-gray-700 divide-y">
-            <ExpenseCard name="Product Name" desc="Description" rupees={230} />
-            <ExpenseCard name="Product Name" desc="Description" rupees={5120} />
+            {expenseCard.map((expense, id) => (
+              <ExpenseCard
+                key={id}
+                id={id + 1}
+                name={expense.name}
+                desc={expense.desc}
+                rupees={expense.amount}
+              />
+            ))}
           </div>
         </section>
       </main>
