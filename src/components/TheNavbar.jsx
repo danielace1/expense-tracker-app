@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
-const TheNavbar = () => {
+const TheNavbar = ({ onDeleteAll }) => {
+  const handleDeleteAllClick = () => {
+    onDeleteAll();
+  };
+
   return (
     <nav className="relative flex items-center justify-between bg-neutral-800 px-10 py-5">
       <div>
@@ -18,6 +23,7 @@ const TheNavbar = () => {
 
       <div>
         <button
+          onClick={handleDeleteAllClick}
           title="Delete All Expenses"
           className="hover:bg-gray-200 transition-all hover:transition hover:bg-opacity-10 hover:rounded-full absolute top-2 right-16 p-3"
         >
@@ -48,6 +54,10 @@ const TheNavbar = () => {
       </div>
     </nav>
   );
+};
+
+TheNavbar.propTypes = {
+  onDeleteAll: PropTypes.func.isRequired,
 };
 
 export default TheNavbar;

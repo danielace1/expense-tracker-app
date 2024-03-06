@@ -30,10 +30,13 @@ const Schema = z.object({
 });
 
 const UserLayout = () => {
+  // for create
   const [dialogbox, setdialogBox] = useState(false);
+  // for update
+  const [updateform, setUpdateForm] = useState(false);
   const [expenseCard, setexpenseCard] = useState([]);
   const [total, settotal] = useState("0");
-  const [expenseDetails, setexpenseDetails] = useState(false);
+  const [expenseDetails, setexpenseDetails] = useState([]);
 
   // create form handlers
   const {
@@ -65,6 +68,7 @@ const UserLayout = () => {
 
   const handleEditExpense = (expense) => {
     setexpenseDetails(expense);
+    setUpdateForm(!updateform);
   };
 
   // Update the expense data in the database
@@ -77,11 +81,11 @@ const UserLayout = () => {
     };
 
     const updates = {};
-    updates[`people/${id}`] = expenseData;
+    updates[`${COLLECTION_NAME}${id}`] = expenseData;
 
     try {
       await update(ref(database), updates);
-      setexpenseDetails(!expenseDetails);
+      setUpdateForm(!updateform);
     } catch (error) {
       console.error("Error updating expense data:", error);
     }
@@ -92,9 +96,9 @@ const UserLayout = () => {
     await updateExpenseData(data, existingId);
   };
 
-  // cancel functionality
+  // cancel form
   const handelCancel = () => {
-    setexpenseDetails(null);
+    setUpdateForm(!updateform);
   };
 
   const handleDialogBox = () => {
@@ -128,7 +132,7 @@ const UserLayout = () => {
     reset();
   };
 
-  // fetching data from Firebase
+  // fetching data from Firebase (read)
   useEffect(() => {
     const starCountRef = ref(database, COLLECTION_NAME);
     onValue(starCountRef, (snapshot) => {
@@ -152,23 +156,64 @@ const UserLayout = () => {
     });
   }, []);
 
+  // delete action
+  const handleDelete = async (expenseId) => {
+    try {
+      const updates = {};
+      updates[`${COLLECTION_NAME}${expenseId}`] = null;
+
+      await update(ref(database), updates);
+
+      const deleteExpenseCard = expenseCard.filter(
+        (expense) => expense.id !== expenseId
+      );
+      setexpenseCard(deleteExpenseCard);
+
+      if (deleteExpenseCard.length === 0) {
+        settotal(0);
+      }
+
+      alert("Expense deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+    }
+  };
+
+  // Function to delete all expenses
+  const handleDeleteAll = async () => {
+    const confirmDelete = confirm(
+      "Are you sure you want to delete all expenses?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await set(ref(database, COLLECTION_NAME), null);
+        setexpenseCard([]);
+        settotal(0);
+        alert("All expenses deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting all expenses:", error);
+      }
+    }
+  };
+
   return (
     <>
-      <TheNavbar />
+      <TheNavbar onDeleteAll={handleDeleteAll} />
 
       <main>
         <section
           className={`relative bg-zinc-800 min-h-screen py-1 overflow-hidden `}
         >
           {/* Glass effect layer */}
-          {(dialogbox || expenseDetails) && (
+          {(dialogbox || updateform) && (
             <div className="absolute inset-0 bg-black bg-opacity-25 backdrop-blur-sm"></div>
           )}
 
           <div className="bg-zinc-600 text-center py-3 text-white font-semibold">
             <p>
               There are{" "}
-              <span className="text-green-400 text-lg">
+              <span className="text-green-400 text-xl">
                 {" "}
                 ₹ {total.toLocaleString()}
               </span>{" "}
@@ -177,6 +222,16 @@ const UserLayout = () => {
           </div>
 
           <div className="relative flex justify-center">
+            {(expenseCard.length === 0 || expenseDetails.length === null) && (
+              <div>
+                <img
+                  src="https://cdn-icons-png.flaticon.com/256/6289/6289296.png"
+                  alt="no expense data"
+                  className="mt-20 opacity-40 lg:w-96"
+                />
+              </div>
+            )}
+
             {/* Create form */}
             {dialogbox && (
               <form
@@ -250,53 +305,54 @@ const UserLayout = () => {
                 desc={expense.desc}
                 amount={expense.amount}
                 onEdit={handleEditExpense}
+                onDelete={handleDelete}
               />
             ))}
+          </div>
 
-            {/* Update Expense Details */}
-            <div className="flex justify-center">
-              {expenseDetails && (
-                <form
-                  onSubmit={handleSubmit2(handleEditFormSubmit)}
-                  className={`absolute top-14 max-w-[360px] w-full bg-zinc-700 rounded-lg shadow-md px-4 py-6 space-y-6 animate-fade`}
-                >
-                  <h1 className="text-white font-semibold text-xl">
-                    Update Expense
-                  </h1>
-                  <FormInput
-                    name="name"
-                    label="Name"
-                    register={register2("name")}
-                    error={errors2.name}
-                  />
-                  <TextArea
-                    name="desc"
-                    label="Description"
-                    register={register2("desc")}
-                    error={errors2.desc}
-                  />
-                  <FormInput
-                    name="amount"
-                    type="number"
-                    label="Amount"
-                    register={register2("amount")}
-                    error={errors2.amount}
-                  />
-                  <div className="mt-5 flex items-center">
-                    <button
-                      type="button"
-                      onClick={handelCancel}
-                      className="w-full text-cyan-500 font-semibold transition-all hover:text-cyan-600"
-                    >
-                      Cancel
-                    </button>
-                    <button className="w-full text-cyan-500 font-semibold transition-all hover:text-cyan-600">
-                      Update
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
+          {/* Update Expense Details */}
+          <div className="flex justify-center">
+            {updateform && (
+              <form
+                onSubmit={handleSubmit2(handleEditFormSubmit)}
+                className={`absolute top-14 max-w-[360px] w-full bg-zinc-700 rounded-lg shadow-md px-4 py-6 space-y-6 animate-fade`}
+              >
+                <h1 className="text-white font-semibold text-xl">
+                  Update Expense
+                </h1>
+                <FormInput
+                  name="name"
+                  label="Name"
+                  register={register2("name")}
+                  error={errors2.name}
+                />
+                <TextArea
+                  name="desc"
+                  label="Description"
+                  register={register2("desc")}
+                  error={errors2.desc}
+                />
+                <FormInput
+                  name="amount"
+                  type="number"
+                  label="Amount"
+                  register={register2("amount")}
+                  error={errors2.amount}
+                />
+                <div className="mt-5 flex items-center">
+                  <button
+                    type="button"
+                    onClick={handelCancel}
+                    className="w-full text-cyan-500 font-semibold transition-all hover:text-cyan-600"
+                  >
+                    Cancel
+                  </button>
+                  <button className="w-full text-cyan-500 font-semibold transition-all hover:text-cyan-600">
+                    Update
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </section>
       </main>
