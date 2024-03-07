@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 
 import { ref, onValue, set, update, child } from "firebase/database";
-import { database } from "../firebase";
+import { database, auth } from "../firebase";
 
 import TheNavbar from "../components/TheNavbar";
 import FormInput from "../components/form/FormInput";
@@ -110,23 +110,24 @@ const UserLayout = () => {
   };
 
   // create and sending to server
-  const sendInfoToFirebase = (data) => {
+  const sendInfoToFirebase = async (data) => {
     setdialogBox(false);
 
     try {
       const unique_id = uuidv4();
+
+      data.id = unique_id;
+
       const expenseRef = child(
         ref(database),
         `${COLLECTION_NAME}/${unique_id}`
       );
-      set(expenseRef, {
+      await set(expenseRef, {
         id: unique_id,
         name: data.name,
         desc: data.desc,
         amount: data.amount,
       });
-
-      data.id = unique_id;
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -199,9 +200,20 @@ const UserLayout = () => {
     }
   };
 
+  // Log out
+  const navigate = useNavigate();
+  const handleLogOut = async () => {
+    try {
+      await auth.signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <>
-      <TheNavbar onDeleteAll={handleDeleteAll} />
+      <TheNavbar onDeleteAll={handleDeleteAll} logOut={handleLogOut} />
 
       <main>
         <section

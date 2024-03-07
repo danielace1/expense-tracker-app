@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
-const TheNavbar = ({ onDeleteAll }) => {
+const TheNavbar = ({ onDeleteAll, logOut }) => {
   const handleDeleteAllClick = () => {
     onDeleteAll();
   };
 
+  const handleLogOutClick = () => {
+    logOut();
+  };
+
   return (
-    <nav className="relative flex items-center justify-between bg-neutral-800 px-10 py-5">
+    <nav className="relative flex items-center justify-between bg-neutral-800 px-5 sm:px-10 py-5">
       <div>
         <Link to="/" className="flex items-center space-x-3">
           <img
@@ -25,7 +29,7 @@ const TheNavbar = ({ onDeleteAll }) => {
         <button
           onClick={handleDeleteAllClick}
           title="Delete All Expenses"
-          className="hover:bg-gray-200 transition-all hover:transition hover:bg-opacity-10 hover:rounded-full absolute top-2 right-16 p-3"
+          className="hover:bg-gray-200 transition-all hover:transition hover:bg-opacity-10 hover:rounded-full absolute top-2.5 sm:top-2 right-16 p-3"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -38,8 +42,9 @@ const TheNavbar = ({ onDeleteAll }) => {
           </svg>
         </button>
         <button
+          onClick={handleLogOutClick}
           title="Sign Out"
-          className="hover:bg-gray-200 transition-all hover:transition hover:bg-opacity-10 hover:rounded-full absolute top-2 right-5 p-3"
+          className="hover:bg-gray-200 transition-all hover:transition hover:bg-opacity-10 hover:rounded-full absolute top-2.5 sm:top-2  right-5 p-3"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -58,6 +63,7 @@ const TheNavbar = ({ onDeleteAll }) => {
 
 TheNavbar.propTypes = {
   onDeleteAll: PropTypes.func.isRequired,
+  logOut: PropTypes.func.isRequired,
 };
 
 export default TheNavbar;

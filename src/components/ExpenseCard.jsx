@@ -12,23 +12,27 @@ const ExpenseCard = ({ index, id, name, desc, amount, onEdit, onDelete }) => {
 
   return (
     <div
-      className="flex items-center text-white px-3 py-2 hover:bg-neutral-700 rounded hover:bg-opacity-20"
+      className="flex items-center text-white sm:px-3 py-2 hover:bg-neutral-700 rounded hover:bg-opacity-20"
       id={id}
     >
       <div className="mr-3 text-sm">{index}.</div>{" "}
       <div className="flex-shrink-0">
-        <img src="/Rupee-logo.webp" alt="rupee" className="w-14 rounded-full" />
+        <img
+          src="/Rupee-logo.webp"
+          alt="rupee"
+          className="w-12 sm:w-14 rounded-full"
+        />
       </div>
-      <div className="flex-1 min-w-0 ms-4">
-        <h1 className="text-lg sm:text-xl font-medium truncate dark:text-white mb-1">
+      <div className="flex-1 min-w-0 ms-2 sm:ms-4">
+        <h1 className="text-base sm:text-xl font-medium truncate dark:text-white mb-1">
           {name}
         </h1>
-        <p className="text-sm text-gray-300 truncate dark:text-gray-400">
+        <p className="text-xs sm:text-sm text-gray-300 truncate dark:text-gray-400">
           {desc}
         </p>
       </div>
-      <div className="inline-flex items-center space-x-10 font-semibold dark:text-white">
-        <div className="space-x-10">
+      <div className="sm:inline-flex items-center space-x-10 font-semibold dark:text-white">
+        <div className="flex justify-end space-x-4 mb-1 sm:space-x-10">
           <button onClick={handleEditClick}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +57,7 @@ const ExpenseCard = ({ index, id, name, desc, amount, onEdit, onDelete }) => {
           </button>
         </div>
 
-        <div className="text-xl">₹ {amount}</div>
+        <div className="text-lg sm:text-xl">₹ {amount}</div>
       </div>
     </div>
   );
