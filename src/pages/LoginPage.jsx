@@ -65,6 +65,8 @@ const LoginPage = () => {
       console.log(error);
       if (error.code === "auth/invalid-credential") {
         alert("Invalid email or password");
+      } else if (error.code === "auth/invalid-email") {
+        alert("Invalid email or password");
       } else if (error.code === "auth/email-already-in-use") {
         alert("Email already in use, Please Login!");
       }
