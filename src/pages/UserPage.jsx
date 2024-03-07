@@ -1,4 +1,7 @@
+import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -10,10 +13,7 @@ import { database } from "../firebase";
 import TheNavbar from "../components/TheNavbar";
 import FormInput from "../components/form/FormInput";
 import TextArea from "../components/form/TextArea";
-import { useForm } from "react-hook-form";
 import ExpenseCard from "../components/ExpenseCard";
-
-const COLLECTION_NAME = "people/";
 
 const Schema = z.object({
   name: z
@@ -37,6 +37,9 @@ const UserLayout = () => {
   const [expenseCard, setexpenseCard] = useState([]);
   const [total, settotal] = useState("0");
   const [expenseDetails, setexpenseDetails] = useState([]);
+
+  const { uid } = useParams();
+  const COLLECTION_NAME = `expenses/${uid}`;
 
   // create form handlers
   const {
@@ -81,7 +84,7 @@ const UserLayout = () => {
     };
 
     const updates = {};
-    updates[`${COLLECTION_NAME}${id}`] = expenseData;
+    updates[`${COLLECTION_NAME}/${id}`] = expenseData;
 
     try {
       await update(ref(database), updates);
@@ -112,7 +115,6 @@ const UserLayout = () => {
 
     try {
       const unique_id = uuidv4();
-
       const expenseRef = child(
         ref(database),
         `${COLLECTION_NAME}/${unique_id}`
@@ -154,13 +156,13 @@ const UserLayout = () => {
         console.log("No records found!");
       }
     });
-  }, []);
+  }, [COLLECTION_NAME]);
 
   // delete action
   const handleDelete = async (expenseId) => {
     try {
       const updates = {};
-      updates[`${COLLECTION_NAME}${expenseId}`] = null;
+      updates[`${COLLECTION_NAME}/${expenseId}`] = null;
 
       await update(ref(database), updates);
 
