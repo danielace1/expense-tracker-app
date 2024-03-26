@@ -6,6 +6,10 @@ The Expense Tracker App is a web application designed to help users track their 
 
 ![Expense-Tracker-App](public/Screenshot.png)
 
+## Live Link
+
+[Live Link](https://expense-tracker-app-khaki.vercel.app/)
+
 ## 🌟 Features
 
 - Add new expenses with details such as name, description, and amount.
